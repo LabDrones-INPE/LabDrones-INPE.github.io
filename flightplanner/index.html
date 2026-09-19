@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabDrones - FlightPlanner (Em Construção)</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #1a1a1a;
+            --accent-color: #27ae60;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: space-between;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 2px solid #1a1a1a;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .header-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .logo-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .header-title p {
+            margin: 3px 0 0 0;
+            color: #666;
+            font-size: 13px;
+        }
+
+        main {
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .status-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+        }
+
+        .icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .badge-construction {
+            display: inline-block;
+            background-color: #f39c12;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            margin: 0 0 15px 0;
+            font-size: 26px;
+            color: #1a1a1a;
+        }
+
+        p {
+            color: #555;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #333333;
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #1a1a1a;
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            color: #777;
+            font-size: 13px;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <!-- Logo do LabDrones na raiz -->
+            <img src="../logo_labdrones.png" alt="Logo LabDrones" class="logo-img" onerror="this.style.display='none'">
+            <div class="header-title">
+                <h1>LabDrones</h1>
+                <p>Plataforma Integrada de Geotecnologias</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="status-card">
+            <!-- Tag de Status -->
+            <span class="badge-construction">🛠️ Módulo em Desenvolvimento</span>
+
+            <!-- Ícone do Módulo FlightPlanner (Drone com +) -->
+            <div class="icon-container">
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="10" y="10" width="4" height="4" rx="1" fill="#1a1a1a" />
+                    <line x1="6" y1="6" x2="10" y2="10" stroke="#1a1a1a" />
+                    <line x1="18" y1="6" x2="14" y2="10" stroke="#1a1a1a" />
+                    <line x1="6" y1="18" x2="10" y2="14" stroke="#1a1a1a" />
+                    <line x1="18" y1="18" x2="14" y2="14" stroke="#1a1a1a" />
+                    <circle cx="5" cy="5" r="2.5" stroke="#1a1a1a" fill="#ffffff" />
+                    <circle cx="19" cy="5" r="2.5" stroke="#1a1a1a" fill="#ffffff" />
+                    <circle cx="5" cy="19" r="2.5" stroke="#1a1a1a" fill="#ffffff" />
+                    <circle cx="19" cy="19" r="2.5" stroke="#1a1a1a" fill="#ffffff" />
+                    <circle cx="18.5" cy="18.5" r="4.5" fill="#f39c12" stroke="#ffffff" stroke-width="1.5" />
+                    <line x1="18.5" y1="16" x2="18.5" y2="21" stroke="#ffffff" stroke-width="1.5" />
+                    <line x1="16" y1="18.5" x2="21" y2="18.5" stroke="#ffffff" stroke-width="1.5" />
+                </svg>
+            </div>
+
+            <h2>LabDrones FlightPlanner</h2>
+            <p>
+                A ferramenta para planejamento interativo, estimativa de cobertura e parametrização pré-campo de futuros planos de voo está sendo preparada e será disponibilizada em breve.
+            </p>
+
+            <!-- Botões de Navegação -->
+            <div class="btn-group">
+                <a href="../" class="btn btn-primary">◀ Voltar ao Portal Principal</a>
+                
+                <a href="../geocatalog/" class="btn btn-secondary">
+                    <!-- Ícone do GeoCatalog (Globo + Drone) dentro do Botão -->
+                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="14" cy="14" r="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" />
+                        <path d="M 7 7 C 9 6, 11 8, 10 11 C 8 12, 6 10, 5 11 C 4 12, 6 14, 7 16 C 8 18, 11 18, 12 21 C 10 23, 7 23, 5 20 C 3 17, 3 13, 7 7 Z" fill="#4ade80" stroke="#16a34a" stroke-width="0.8" opacity="0.9" />
+                        <path d="M 17 5 C 19 5, 21 7, 20 10 C 18 11, 16 9, 15 11 C 16 13, 19 14, 18 18 C 17 21, 19 22, 21 20 C 23 17, 24 14, 24 12 C 24 8, 20 5, 17 5 Z" fill="#4ade80" stroke="#16a34a" stroke-width="0.8" opacity="0.9" />
+                        <path d="M 4 14 H 24 M 14 4 A 10 10 0 0 0 14 24 M 14 4 A 10 10 0 0 1 14 24" stroke="#0284c7" stroke-width="0.8" stroke-dasharray="2 1.5" opacity="0.6" />
+                        
+                        <g transform="translate(13, 13) scale(0.65)">
+                            <rect x="10" y="10" width="4" height="4" rx="1" fill="#1a1a1a" />
+                            <line x1="6" y1="6" x2="10" y2="10" stroke="#1a1a1a" stroke-width="2" />
+                            <line x1="18" y1="6" x2="14" y2="10" stroke="#1a1a1a" stroke-width="2" />
+                            <line x1="6" y1="18" x2="10" y2="14" stroke="#1a1a1a" stroke-width="2" />
+                            <line x1="18" y1="18" x2="14" y2="14" stroke="#1a1a1a" stroke-width="2" />
+                            <circle cx="5" cy="5" r="2.8" stroke="#1a1a1a" stroke-width="2" fill="#ffffff" />
+                            <circle cx="19" cy="5" r="2.8" stroke="#1a1a1a" stroke-width="2" fill="#ffffff" />
+                            <circle cx="5" cy="19" r="2.8" stroke="#1a1a1a" stroke-width="2" fill="#ffffff" />
+                            <circle cx="19" cy="19" r="2.8" stroke="#1a1a1a" stroke-width="2" fill="#ffffff" />
+                        </g>
+                    </svg>
+                    <span>Acessar GeoCatalog</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; LabDrones &mdash; Todos os direitos reservados.
+    </footer>
+
+</body>
+</html>

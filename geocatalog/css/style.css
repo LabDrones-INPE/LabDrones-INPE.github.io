@@ -1,0 +1,102 @@
+body { margin: 0; padding: 0; font-family: Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar ajustável e colapsável */
+#sidebar { 
+    width: 240px; 
+    min-width: 240px;
+    background: #2c3e50; 
+    color: white; 
+    padding: 15px; 
+    box-sizing: border-box; 
+    z-index: 1000; 
+    box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#sidebar.collapsed {
+    margin-left: -240px;
+}
+
+/* Botão para ocultar/exibir a sidebar */
+#toggle-btn {
+    position: absolute;
+    right: -28px;
+    top: 15px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 35px;
+    cursor: pointer;
+    border-radius: 0 5px 5px 0;
+    font-size: 14px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#map { flex-grow: 1; height: 100%; background: #e0e0e0; }
+
+h4 { margin: 0 0 5px 0; color: #ecf0f1; border-bottom: 1px solid #34495e; padding-bottom: 5px; font-size: 15px; }
+
+.control-group { display: flex; flex-direction: column; gap: 5px; }
+label { font-weight: bold; color: #bdc3c7; font-size: 12px; }
+select, button { width: 100%; padding: 7px; border-radius: 4px; border: none; font-size: 13px; box-sizing: border-box; }
+select { background: #34495e; color: white; cursor: pointer; }
+
+.btn-export { 
+    background: #27ae60; 
+    color: white; 
+    font-weight: bold; 
+    cursor: pointer; 
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+.btn-export:hover { background: #219150; }
+
+.legend i { width: 14px; height: 14px; float: left; margin-right: 8px; opacity: 0.8; border-radius: 2px; }
+
+.legend {
+    background: white;
+    padding: 10px 14px;
+    line-height: 22px;
+    color: #333;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    max-height: 280px;
+    overflow-y: auto;
+    font-size: 13px;
+    font-family: sans-serif;
+}
+
+.legend-item {
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-item:hover {
+    background: #f0f0f0;
+}
+
+.legend-item.desativado {
+    opacity: 0.4;
+    text-decoration: line-through;
+}
+
+.legend-color-box {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    display: inline-block;
+}

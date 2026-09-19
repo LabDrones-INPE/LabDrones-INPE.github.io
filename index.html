@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabDrones - Portal de Aplicações WebGIS</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #1a1a1a;
+            --accent-color: #2c3e50;
+            --hover-color: #16a085;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 2px solid #1a1a1a;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .header-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+        }
+
+        .logo-img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .header-title p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        main {
+            flex-grow: 1;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .card:hover {
+            border-color: #1a1a1a;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+            color: #1a1a1a;
+        }
+
+        .card p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .card-btn {
+            display: inline-block;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .card-btn:hover {
+            background-color: var(--hover-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            color: #777;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <!-- Insira a imagem do logo do LabDrones na pasta e aponte o src -->
+            <img src="logo_labdrones.png" alt="Logo LabDrones" class="logo-img">
+            <div class="header-title">
+                <h1>LabDrones</h1>
+                <p>Plataforma Integrada de Geotecnologias e Drones</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="intro">
+            <h2>Selecione o Sistema</h2>
+            <p>Acesse o catálogo de voos realizados ou a ferramenta de planejamento para futuras campanhas de campo.</p>
+        </div>
+
+        <div class="cards-grid">
+            <!-- CARD 1: Consulta de Voos -->
+            <div class="card">                
+                <div>
+                    <!-- Drone icon GeoCatalog: -->
+                     <div class="card-icon" style="display: flex; justify-content: center; align-items: center; height: 60px;">
+                        <svg width="60" height="60" viewBox="0 0 32 32" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            
+                            <!-- 1. MAPA MÚNDI / GLOBO TERRESTRE (Centralizado e Proporcional) -->
+                            <!-- Oceano / Fundo do Globo -->
+                            <circle cx="14" cy="14" r="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" />
+                            
+                            <!-- Continentes (Verde) -->
+                            <path d="M 7 7 C 9 6, 11 8, 10 11 C 8 12, 6 10, 5 11 C 4 12, 6 14, 7 16 C 8 18, 11 18, 12 21 C 10 23, 7 23, 5 20 C 3 17, 3 13, 7 7 Z" 
+                                fill="#4ade80" stroke="#16a34a" stroke-width="0.8" opacity="0.9" />
+                            <path d="M 17 5 C 19 5, 21 7, 20 10 C 18 11, 16 9, 15 11 C 16 13, 19 14, 18 18 C 17 21, 19 22, 21 20 C 23 17, 24 14, 24 12 C 24 8, 20 5, 17 5 Z" 
+                                fill="#4ade80" stroke="#16a34a" stroke-width="0.8" opacity="0.9" />
+                            
+                            <!-- Grade do Globo (Linhas sutis) -->
+                            <path d="M 4 14 H 24 M 14 4 A 10 10 0 0 0 14 24 M 14 4 A 10 10 0 0 1 14 24" 
+                                stroke="#0284c7" stroke-width="0.8" stroke-dasharray="2 1.5" opacity="0.6" />
+
+                            <!-- 2. SEU DRONE BASE (Menor, posicionado na diagonal inferior direita) -->
+                            <!-- Escala reduzida (0.65) e reposicionado (x: 13, y: 13) para proporção perfeita -->
+                            <g transform="translate(13, 13) scale(0.65)">
+                                <!-- Corpo Central -->
+                                <rect x="10" y="10" width="4" height="4" rx="1" fill="#1a1a1a" />
+                                
+                                <!-- Braços do Quadricóptero -->
+                                <line x1="6" y1="6" x2="10" y2="10" stroke="#1a1a1a" stroke-width="2" />
+                                <line x1="18" y1="6" x2="14" y2="10" stroke="#1a1a1a" stroke-width="2" />
+                                <line x1="6" y1="18" x2="10" y2="14" stroke="#1a1a1a" stroke-width="2" />
+                                <line x1="18" y1="18" x2="14" y2="14" stroke="#1a1a1a" stroke-width="2" />
+                                
+                                <!-- Hélices / Motores nos 4 Cantos -->
+                                <circle cx="5" cy="5" r="2.8" stroke="#1a1a1a" stroke-width="2" fill="#ffffff" />
+                                <circle cx="19" cy="5" r="2.8" stroke="#1a1a1a" stroke-width="2" fill="#ffffff" />
+                                <circle cx="5" cy="19" r="2.8" stroke="#1a1a1a" stroke-width="2" fill="#ffffff" />
+                                <circle cx="19" cy="19" r="2.8" stroke="#1a1a1a" stroke-width="2" fill="#ffffff" />
+                            </g>
+
+                        </svg>
+                    </div>
+                    <h2>GeoCatalog</h2>
+                    <p>Consultar e filtrar dados de voos de drone executados em campanhas passadas do laboratório (Pará, Paraíba e outros).</p>
+                </div>
+                <a href="./geocatalog/" class="card-btn">Acessar Catálogo</a>
+            </div>
+
+            <!-- CARD 2: Planejador de Voo -->
+            <div class="card">
+                <div>
+                    <!-- Drone icon FlightPlanner: -->
+                    <div class="card-icon" style="display: flex; justify-content: center; align-items: center; height: 60px;">
+                        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Estrutura do Drone Multirotor -->
+                            <!-- Corpo Central -->
+                            <rect x="10" y="10" width="4" height="4" rx="1" fill="#1a1a1a" />
+                            <!-- Braços do Quadricóptero -->
+                            <line x1="6" y1="6" x2="10" y2="10" />
+                            <line x1="18" y1="6" x2="14" y2="10" />
+                            <line x1="6" y1="18" x2="10" y2="14" />
+                            <line x1="18" y1="18" x2="14" y2="14" />
+                            <!-- Hélices/Motores nos 4 Cantos -->
+                            <circle cx="5" cy="5" r="2.5" />
+                            <circle cx="19" cy="5" r="2.5" />
+                            <circle cx="5" cy="19" r="2.5" />
+                            <circle cx="19" cy="19" r="2.5" />
+                            
+                            <!-- Badge Indicador de Criação / Sinal de Mais (+) -->
+                            <circle cx="18.5" cy="18.5" r="4.5" fill="#27ae60" stroke="#ffffff" stroke-width="1.5" />
+                            <line x1="18.5" y1="16" x2="18.5" y2="21" stroke="#ffffff" stroke-width="1.5" />
+                            <line x1="16" y1="18.5" x2="21" y2="18.5" stroke="#ffffff" stroke-width="1.5" />
+                        </svg>
+                    </div>
+                    <h2>FlightPlanner</h2>
+                    <p>Ferramenta interativa para elaboração, estimativa de cobertura e planejamento pré-campo de novos planos de voo.</p>
+                </div>
+                <a href="./flightplanner/" class="card-btn">Acessar Planejador</a>
+            </div>
+        </div>
+
+
+
+
+
+
+
+    </main>
+
+    <footer>
+        &copy; LabDrones &mdash; Todos os direitos reservados. Suportado por GitHub Pages.
+    </footer>
+
+</body>
+</html>

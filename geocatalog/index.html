@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>LabDrones WebGIS - INPE</title>
+
+    <link rel="icon" href="data:,"> <!-- favicon silent -->
+    
+    <!-- Biblioteca Leaflet stable version 1.9.4: (Local) -->
+    <link rel="stylesheet" href="lib/leaflet/leaflet.css" />
+    <script src="lib/leaflet/leaflet.js"></script>
+    
+    <!-- CSS Customizado Local -->
+    <link rel="stylesheet" href="css/style.css" />    
+    
+    <style>
+        /* Estilização para o Botão de Retorno com Logo do LabDrones */
+        .btn-home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 8px 12px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            transition: background 0.2s, transform 0.1s;
+            border: 1px solid #333333;
+        }
+
+        .btn-home:hover {
+            background-color: #333333;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .logo-btn-img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            background-color: #ffffff;
+            border-radius: 50%;
+            padding: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <button id="toggle-btn" onclick="toggleSidebar()" title="Ocultar/Exibir Menu">◀</button>
+        
+        <!-- ATALHO PARA O PORTAL PRINCIPAL (Com Miniatura do Logo LabDrones) -->
+        <a href="../" class="btn-home" title="Voltar ao Portal Principal LabDrones">
+            <img src="../logo_labdrones.png" alt="Logo LabDrones" class="logo-btn-img" onerror="this.style.display='none'">
+            <span>◀ Portal LabDrones</span>
+        </a>
+
+        <h4>Visualização & Filtros</h4>
+        
+        <div class="control-group">
+            <label for="basemapSelect">Mapa de Fundo:</label>
+            <select id="basemapSelect" onchange="mudarMapaDeFundo()">
+                <option value="osm">OpenStreetMap</option>
+                <option value="esri">World Imagery (Satélite Esri)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="filterAttribute">Colorir / Filtrar por:</label>
+            <select id="filterAttribute" onchange="trocarAtributoFiltro()">
+                <option value="Projeto">Projeto</option>
+                <option value="Municipio">Município</option>
+                <option value="Platform">Plataforma (Drone)</option>
+                <option value="Ano">Ano do Voo</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <button class="btn-export" onclick="exportarGeoJsonParaCSV()">📥 Exportar Dados (CSV)</button>
+        </div>
+    </div>
+
+    <div id="map"></div>    
+
+    <!-- JS Customizado Local -->
+    <script src="js/app.js"></script>
+</body>
+</html>
