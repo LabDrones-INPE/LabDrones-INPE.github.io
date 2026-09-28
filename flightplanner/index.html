@@ -189,7 +189,7 @@ button.active{ background:#f39c12; color:#20303d; }
 #map{ flex:1; height:100%; background:#e0e0e0; }
 
 /* -------------------------------------------------- coordinates panel */
-#coordPanel{
+#coordPanel, #exportSelectPanel{
   position:absolute;
   right:12px;
   top:12px;
@@ -204,8 +204,8 @@ button.active{ background:#f39c12; color:#20303d; }
   flex-direction:column;
   overflow:hidden;
 }
-#coordPanel[hidden]{ display:none; }
-#coordPanel header{
+#coordPanel[hidden], #exportSelectPanel[hidden]{ display:none; }
+#coordPanel header, #exportSelectPanel header{
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -215,7 +215,7 @@ button.active{ background:#f39c12; color:#20303d; }
   font-size:13px;
   font-weight:700;
 }
-#coordPanel header button{
+#coordPanel header button, #exportSelectPanel header button{
   width:auto; min-height:auto; margin:0; padding:2px 8px;
   background:transparent; color:#fff; font-size:16px;
 }
@@ -229,13 +229,30 @@ button.active{ background:#f39c12; color:#20303d; }
   white-space:pre-wrap;
   word-break:break-all;
 }
-#coordPanel .actions{
+#exportSelectList{
+  padding:6px 12px;
+  overflow:auto;
+  flex:1;
+}
+#exportSelectList label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 2px;
+  font-size:13px;
+  color:#20303d;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+#exportSelectList label:last-child{ border-bottom:none; }
+#exportSelectList input[type="checkbox"]{ width:16px; height:16px; flex:0 0 auto; accent-color:var(--accent); }
+#coordPanel .actions, #exportSelectPanel .actions{
   display:flex;
   gap:6px;
   padding:8px 12px;
   border-top:1px solid #e0e0e0;
 }
-#coordPanel .actions button{ margin:0; font-size:12px; min-height:36px; }
+#coordPanel .actions button, #exportSelectPanel .actions button{ margin:0; font-size:12px; min-height:36px; }
 
 /* --------------------------------------------------------------- MOBILE */
 @media (max-width:768px){
@@ -246,7 +263,7 @@ button.active{ background:#f39c12; color:#20303d; }
     box-shadow:2px 0 16px rgba(0,0,0,.5);
   }
   #map{ width:100%; }
-  #coordPanel{ width:auto; top:auto; bottom:12px; right:12px; left:12px; max-height:55vh; }
+  #coordPanel, #exportSelectPanel{ width:auto; top:auto; bottom:12px; right:12px; left:12px; max-height:55vh; }
 }
 
 .leaflet-draw-toolbar a{ background-color:#fff; }
@@ -396,6 +413,17 @@ button.active{ background:#f39c12; color:#20303d; }
   </div>
 </div>
 
+<div id="exportSelectPanel" hidden>
+  <header>
+    <span>Quais planos exportar?</span>
+    <button id="exportSelectClose" title="Fechar">×</button>
+  </header>
+  <div id="exportSelectList"></div>
+  <div class="actions">
+    <button id="exportSelectConfirm" class="primary">Exportar selecionados</button>
+  </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet-path-drag@1.9.5/dist/index.js"></script>
@@ -403,6 +431,21 @@ button.active{ background:#f39c12; color:#20303d; }
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
 <script>
+////////////////////////////////////////////////////////////////////////////
+// CORREÇÃO DE TOQUE NO LEAFLET.DRAW (linha/polígono terminando cedo demais)
+////////////////////////////////////////////////////////////////////////////
+// O Leaflet.Draw 1.0.4 tem um handler de touchstart (_onTouch) em
+// L.Draw.Polyline que simula um clique completo (start+end) por cima do clique
+// sintético que o próprio navegador já gera a partir do toque — cada toque real
+// acaba contando como 2 vértices, fazendo a linha/polígono avançar ou fechar
+// muito mais rápido do que o usuário pretendia. É um bug conhecido da lib
+// (afeta só o desenho de linha/polígono; retângulo e "área a partir de ponto"
+// não usam esse handler). Desativamos o handler duplicado e deixamos o clique
+// sintético normal do navegador (já usado no desktop) cuidar de tudo sozinho.
+if (window.L && L.Draw && L.Draw.Polyline) {
+  L.Draw.Polyline.prototype._onTouch = function () {};
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // CONFIG
 ////////////////////////////////////////////////////////////////////////////
@@ -772,6 +815,16 @@ map.addControl(drawControl);
 
 map.on(L.Draw.Event.CREATED, e => registerPlano(e.layer));
 
+// As ferramentas nativas de editar/excluir do Leaflet.Draw (ícones de lápis/lixeira
+// no canto do mapa) mexem direto no grupo "planos", sem passar por registerPlano —
+// sem isso, planosMG.entries fica desatualizado (ex: painel de coordenadas continua
+// mostrando formas já apagadas). rescan() resincroniza a lista com o que está no mapa.
+map.on(L.Draw.Event.DELETED, () => {
+  planosMG.rescan();
+  setStatus("statusPlanos", "Forma(s) removida(s).");
+});
+map.on(L.Draw.Event.EDITED, () => planosMG.rescan());
+
 ////////////////////////////////////////////////////////////////////////////
 // MOVE MODE  (drag whole shapes for small adjustments)
 ////////////////////////////////////////////////////////////////////////////
@@ -865,24 +918,22 @@ function updateBufferLegend() {
   document.getElementById(id).addEventListener("input", () => { updateBufferLegend(); renderViz(); }));
 updateBufferLegend();
 
+// Ambas seguem o contorno real da geometria (ponto, linha ou polígono) com
+// turf.buffer — antes, as duas ignoravam a forma e desenhavam só em volta do
+// centro/caixa delimitadora da feição, o que ficava muito errado para pistas
+// (linhas compridas) ou complexos aeroportuários com formato irregular.
+// "steps" controla o arredondamento das curvas do contorno: alto = suave
+// (zona "circular"), baixo = mais anguloso/poligonal (zona "retangular").
 function rectZone(feature, dist) {
-  const b = turf.bbox(feature);
-  const cLat = (b[1] + b[3]) / 2;
-  const dLon = dist / mPerDegLon(cLat);
-  const dLat = dist / M_PER_DEG_LAT;
-  const minX = b[0] - dLon, maxX = b[2] + dLon;
-  const minY = b[1] - dLat, maxY = b[3] + dLat;
-  return turf.polygon([[[minX,minY],[maxX,minY],[maxX,maxY],[minX,maxY],[minX,minY]]],
-    feature.properties || {});
+  const buffered = turf.buffer(feature, dist, { units:"meters", steps:4 });
+  buffered.properties = feature.properties || {};
+  return buffered;
 }
 
 function circleZone(feature, dist) {
-  const b = turf.bbox(feature);
-  const cLon = (b[0] + b[2]) / 2, cLat = (b[1] + b[3]) / 2;
-  const halfW = ((b[2] - b[0]) / 2) * mPerDegLon(cLat);
-  const halfH = ((b[3] - b[1]) / 2) * M_PER_DEG_LAT;
-  const radiusM = Math.max(halfW, halfH, 0) + dist;
-  return turf.circle([cLon, cLat], radiusM / 1000, { steps:96, units:"kilometers", properties:feature.properties || {} });
+  const buffered = turf.buffer(feature, dist, { units:"meters", steps:64 });
+  buffered.properties = feature.properties || {};
+  return buffered;
 }
 
 function rebuildBuffers() {
@@ -1136,9 +1187,9 @@ const coordText  = document.getElementById("coordText");
 
 function planoLayers() { return planosMG.entries.map(e => e.layer); }
 
-function planosToGeoJSON() {
+function planosToGeoJSON(layers) {
   const features = [];
-  planoLayers().forEach(layer => {
+  (layers || planoLayers()).forEach(layer => {
     if (typeof layer.toGeoJSON !== "function") return;
     const gj = layer.toGeoJSON();
     if (gj.type === "Feature") {
@@ -1206,15 +1257,7 @@ function downloadBlob(content, filename, type) {
   URL.revokeObjectURL(url);
 }
 
-document.getElementById("exportGeoJSON").addEventListener("click", () => {
-  const fc = planosToGeoJSON();
-  if (!fc.features.length) return alert("Nenhum plano carregado.");
-  downloadBlob(JSON.stringify(fc, null, 2), "plano_voo.geojson", "application/geo+json");
-});
-
-document.getElementById("exportKML").addEventListener("click", () => {
-  const layers = planoLayers();
-  if (!layers.length) return alert("Nenhum plano carregado.");
+function layersParaKML(layers) {
   let placemarks = "";
   layers.forEach(layer => {
     const geom = layer.toGeoJSON().geometry;
@@ -1230,9 +1273,58 @@ document.getElementById("exportKML").addEventListener("click", () => {
         `<coordinates>${coords}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>`;
     }
   });
-  const kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>${placemarks}\n</Document>\n</kml>`;
-  downloadBlob(kml, "plano_voo.kml", "application/vnd.google-earth.kml+xml");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>${placemarks}\n</Document>\n</kml>`;
+}
+
+function exportarGeoJSON(layers) {
+  const fc = planosToGeoJSON(layers);
+  downloadBlob(JSON.stringify(fc, null, 2), "plano_voo.geojson", "application/geo+json");
+}
+
+function exportarKML(layers) {
+  downloadBlob(layersParaKML(layers), "plano_voo.kml", "application/vnd.google-earth.kml+xml");
+}
+
+////////////////////////////////////////////////////////////////////////////
+// SELEÇÃO DE PLANOS PARA EXPORTAR  (só pergunta quando há mais de um)
+////////////////////////////////////////////////////////////////////////////
+
+const exportSelectPanel = document.getElementById("exportSelectPanel");
+const exportSelectList  = document.getElementById("exportSelectList");
+let exportSelectCallback = null;
+
+function pedirSelecaoDePlanos(callback) {
+  const layers = planoLayers();
+  if (!layers.length) return alert("Nenhum plano carregado.");
+  if (layers.length === 1) return callback(layers);
+
+  exportSelectList.innerHTML = "";
+  layers.forEach((layer, i) => {
+    const lab = document.createElement("label");
+    lab.innerHTML = `<input type="checkbox" data-i="${i}" checked><span>#${i + 1} ${describePlano(layer)}</span>`;
+    exportSelectList.appendChild(lab);
+  });
+  exportSelectCallback = callback;
+  exportSelectPanel.hidden = false;
+}
+
+document.getElementById("exportSelectClose").addEventListener("click", () => {
+  exportSelectPanel.hidden = true;
+  exportSelectCallback = null;
 });
+
+document.getElementById("exportSelectConfirm").addEventListener("click", () => {
+  const layers = planoLayers();
+  const selecionados = [...exportSelectList.querySelectorAll("input:checked")]
+    .map(cb => layers[+cb.dataset.i]);
+  exportSelectPanel.hidden = true;
+  if (!selecionados.length) return alert("Selecione ao menos um plano.");
+  if (exportSelectCallback) exportSelectCallback(selecionados);
+  exportSelectCallback = null;
+});
+
+document.getElementById("exportGeoJSON").addEventListener("click", () => pedirSelecaoDePlanos(exportarGeoJSON));
+document.getElementById("exportKML").addEventListener("click", () => pedirSelecaoDePlanos(exportarKML));
 
 ////////////////////////////////////////////////////////////////////////////
 // INTERSECTION CHECK  (plan vs restriction zones)
