@@ -447,6 +447,45 @@ if (window.L && L.Draw && L.Draw.Polyline) {
 }
 
 ////////////////////////////////////////////////////////////////////////////
+// CORREÇÃO DE TOQUE NO "MOVER FORMAS" (arrastava o mapa em vez da forma)
+////////////////////////////////////////////////////////////////////////////
+// O núcleo do Leaflet só converte eventos reais de MOUSE (mousedown, click...)
+// em eventos das camadas (ver _initEvents em leaflet.js) — touchstart NUNCA
+// vira um "mousedown" de camada, só o mapa escuta touch diretamente (p/ pan
+// e zoom). O leaflet-path-drag (plugin de arrastar forma inteira) só reage a
+// esse "mousedown" de camada — então, ao arrastar com o dedo, o toque nunca
+// chega a ele, e o pan do mapa (que escuta touch bruto) sempre vence. No
+// desktop funciona porque o navegador sintetiza mousedown/click de verdade.
+// Aqui religamos o início do arrasto (_onDragStart) a um touchstart nativo no
+// próprio elemento da forma — o resto (mover/soltar) o próprio plugin já
+// trata corretamente quando recebe o evento de toque puro.
+if (window.L && L.Handler && L.Handler.PathDrag) {
+  const origAddHooks = L.Handler.PathDrag.prototype.addHooks;
+  const origRemoveHooks = L.Handler.PathDrag.prototype.removeHooks;
+
+  L.Handler.PathDrag.prototype.addHooks = function () {
+    origAddHooks.call(this);
+    const path = this._path;
+    if (!path._path) return; // forma ainda não renderizada (ex: habilitada antes de entrar no mapa)
+    this._onTouchStartDrag = (e) => {
+      if (!e.touches || !e.touches.length) return;
+      this._onDragStart({
+        originalEvent: e,
+        containerPoint: path._map.mouseEventToContainerPoint(e.touches[0])
+      });
+    };
+    L.DomEvent.on(path._path, "touchstart", this._onTouchStartDrag, this);
+  };
+
+  L.Handler.PathDrag.prototype.removeHooks = function () {
+    origRemoveHooks.call(this);
+    if (this._path._path && this._onTouchStartDrag) {
+      L.DomEvent.off(this._path._path, "touchstart", this._onTouchStartDrag, this);
+    }
+  };
+}
+
+////////////////////////////////////////////////////////////////////////////
 // CONFIG
 ////////////////////////////////////////////////////////////////////////////
 
