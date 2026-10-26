@@ -212,26 +212,63 @@ function trocarAtributoFiltro() {
     }
 }
 
-// Exportação em CSV
+// Função auxiliar para converter geometria GeoJSON em string KML
+function geojsonToKmlString(geometry) {
+    if (!geometry) return '';
+    
+    switch (geometry.type) {
+        case 'Point':
+            const pt = geometry.coordinates;
+            return `<Point><coordinates>${pt[0]},${pt[1]}</coordinates></Point>`;
+            
+        case 'LineString':
+            const lineCoords = geometry.coordinates.map(c => `${c[0]},${c[1]}`).join(' ');
+            return `<LineString><coordinates>${lineCoords}</coordinates></LineString>`;
+            
+        case 'Polygon':
+            // Considera o anel externo (coordenadas[0])
+            const polyCoords = geometry.coordinates[0].map(c => `${c[0]},${c[1]}`).join(' ');
+            return `<Polygon><outerBoundaryIs><LinearRing><coordinates>${polyCoords}</coordinates></LinearRing></outerBoundaryIs></Polygon>`;
+            
+        case 'MultiPolygon':
+            // Para casos de polígonos múltiplos ou com furos, agrupa em um MultiGeometry
+            let multiParts = geometry.coordinates.map(polygon => {
+                const coords = polygon[0].map(c => `${c[0]},${c[1]}`).join(' ');
+                return `<Polygon><outerBoundaryIs><LinearRing><coordinates>${coords}</coordinates></LinearRing></outerBoundaryIs></Polygon>`;
+            }).join('');
+            return `<MultiGeometry>${multiParts}</MultiGeometry>`;
+            
+        default:
+            return ''; // Tipo não suportado ou vazio
+    }
+}
+
 function exportarGeoJsonParaCSV() {
     if (!dadosGeoJson || !dadosGeoJson.features || dadosGeoJson.features.length === 0) {
         alert("Nenhum dado disponível para exportação.");
         return;
     }
 
-    const colunas = ["Nome_Voo", "Projeto", "Municipio", "Platform", "Datetime", "Nota"];
+    // 1. Adicionada a nova coluna no cabeçalho
+    const colunas = ["Nome_Voo", "Projeto", "Municipio", "Platform", "Datetime", "Nota", "Geometria_KML"];
     let csvContent = "\uFEFF";
     csvContent += colunas.join(",") + "\n";
 
     dadosGeoJson.features.forEach(f => {
         const props = f.properties;
+        
+        // 2. Converte a geometria atual para a string KML correspondente
+        const kmlGeom = geojsonToKmlString(f.geometry);
+
         const linha = [
             `"${(props.Nome_Voo || '').replace(/"/g, '""')}"`,
             `"${(props.Projeto || 'Não informado').replace(/"/g, '""')}"`,
             `"${(props.Municipio || 'Desconhecido').replace(/"/g, '""')}"`,
             `"${(props.Platform || '').replace(/"/g, '""')}"`,
             `"${(props.Datetime || '').replace(/"/g, '""')}"`,
-            `"${(props.Nota || '').replace(/"/g, '""')}"`
+            `"${(props.Nota || '').replace(/"/g, '""')}"`,
+            // 3. Insere a string KML escapando as aspas duplas exigidas pelo padrão CSV
+            `"${kmlGeom.replace(/"/g, '""')}"`
         ];
         csvContent += linha.join(",") + "\n";
     });
@@ -281,12 +318,12 @@ window.onload = function() {
 
     osmLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
-        attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community'
+        attribution: 'Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, (c) OpenStreetMap contributors, and the GIS User Community'
     });
 
     esriImageryLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
-        attribution: 'Tiles &copy; Esri'
+        attribution: 'Esri, Maxar, Earthstar Geographics, and the GIS User Community'
     });
 
     osmLayer.addTo(map);
