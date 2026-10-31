@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>LabDrones WebGIS - INPE</title>
+    <title>LabDrones GeoCatalog - INPE</title>
 
     <link rel="icon" href="data:,"> <!-- favicon silent -->
     
@@ -15,52 +15,126 @@
     <link rel="stylesheet" href="css/style.css" />    
     
     <style>
-        /* Estilização para o Botão de Retorno com Logo do LabDrones */
-        .btn-home {
+        /* Estilização da Sidebar */
+        #sidebar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 300px;
+            z-index: 1000;
+            background: #243447;
+            color: #ffffff;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: transform 0.3s ease;
+        }
+
+        /* Classe para ocultar a sidebar */
+        #sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        /* Botão de Toggle Fixo na tela para nunca sumir */
+        #toggle-btn {
+            position: fixed;
+            top: 15px;
+            left: 285px; /* Acompanha a bordinha direita da sidebar quando aberta (300px - 15px) */
+            width: 28px;
+            height: 38px;
+            background-color: #243447;
+            color: #ffffff;
+            border: none;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 12px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+            z-index: 1002;
+            transition: left 0.3s ease, background-color 0.2s;
+        }
+
+        /* Quando a sidebar estiver oculta, o botão pula para a bordinha esquerda da tela (left: 0) */
+        #sidebar.collapsed ~ #toggle-btn {
+            left: 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        #toggle-btn:hover {
+            background-color: #1b2735;
+        }
+
+        /* Cabeçalho da Sidebar: Logo + Título + Badge de Versão */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
             gap: 10px;
-            width: 100%;
-            padding: 8px 12px;
-            background-color: #1a1a1a;
-            color: #ffffff;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Logo Pequena à Esquerda como Link para o Portal */
+        .logo-link {
+            display: flex;
+            align-items: center;
             text-decoration: none;
-            font-weight: bold;
-            font-size: 13px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-            transition: background 0.2s, transform 0.1s;
-            border: 1px solid #333333;
+            flex-shrink: 0;
         }
 
-        .btn-home:hover {
-            background-color: #333333;
-            color: #ffffff;
-            transform: translateY(-1px);
-        }
-
-        .logo-btn-img {
-            width: 22px;
-            height: 22px;
+        .logo-header-img {
+            width: 28px;
+            height: 28px;
             object-fit: contain;
-            background-color: #ffffff;
             border-radius: 50%;
-            padding: 1px;
+            background-color: #ffffff;
+            padding: 2px;
+            transition: transform 0.2s;
+        }
+
+        .logo-link:hover .logo-header-img {
+            transform: scale(1.08);
+        }
+
+        /* Título da Aplicação */
+        .sidebar-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        /* Badge de Versão estilo Chip */
+        .version-badge {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #9ab0c7;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
-        <button id="toggle-btn" onclick="toggleSidebar()" title="Ocultar/Exibir Menu">◀</button>
-        
-        <!-- ATALHO PARA O PORTAL PRINCIPAL (Com Miniatura do Logo LabDrones) -->
-        <a href="../" class="btn-home" title="Voltar ao Portal Principal LabDrones">
-            <img src="../logo_labdrones.png" alt="Logo LabDrones" class="logo-btn-img" onerror="this.style.display='none'">
-            <span>◀ Portal LabDrones</span>
-        </a>
+        <!-- Cabeçalho: Logo (Link), Título e Badge de Versão -->
+        <div class="sidebar-header">
+            <a href="../" class="logo-link" title="Voltar ao Portal LabDrones">
+                <img src="../logo_labdrones.png" alt="Logo LabDrones" class="logo-header-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%230284c7\'><circle cx=\'12\' cy=\'12\' r=\'10\'/></svg>'">
+            </a>
+            <h3 class="sidebar-title">
+                GeoCatalog
+                <span class="version-badge">v0.0.1</span>
+            </h3>
+        </div>
 
         <h4>Visualização & Filtros</h4>
         
@@ -87,7 +161,25 @@
         </div>
     </div>
 
+    <!-- Botão Toggle Posicionado FORA da Sidebar (agora fixo na tela) -->
+    <button id="toggle-btn" onclick="toggleSidebar()" title="Ocultar/Exibir Menu">◀</button>
+
     <div id="map"></div>    
+
+    <!-- Função de Toggle da Sidebar -->
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var btn = document.getElementById('toggle-btn');
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                btn.innerHTML = '▶';
+            } else {
+                btn.innerHTML = '◀';
+            }
+        }
+    </script>
 
     <!-- JS Customizado Local -->
     <script src="js/app.js"></script>

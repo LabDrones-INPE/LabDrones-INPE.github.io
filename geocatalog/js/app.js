@@ -54,6 +54,7 @@ function obterCor(valor) {
     return cores[index % cores.length] || '#95a5a6';
 }
 
+
 // Criar conteúdo do Popup
 function criarConteudoPopup(properties) {
     const datetime = properties.Datetime || '';
@@ -63,9 +64,27 @@ function criarConteudoPopup(properties) {
     const nota = properties.Nota || 'N/A';
     const municipio = properties.Municipio || 'Desconhecido';
     const plataforma = properties.Platform || 'N/A';
+    
+    // Captura o link de download vindo do GeoJSON
+    const linkDownload = properties.Download || '';
+    
+    // Gera o botão estilizado apenas se o link existir
+    let botaoDownload = '';
+    if (linkDownload) {
+        botaoDownload = `
+            <div style="margin-top: 12px; text-align: center;">
+                <a href="${linkDownload}" target="_blank" rel="noopener noreferrer" 
+                   style="display: inline-block; width: 100%; padding: 6px 0; background-color: #3498db; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; transition: background-color 0.2s ease-in-out;"
+                   onmouseover="this.style.backgroundColor='#2980b9'" 
+                   onmouseout="this.style.backgroundColor='#3498db'">
+                   📥 Metadados / Download
+                </a>
+            </div>
+        `;
+    }
 
     return `
-        <div style="font-size: 13px; line-height: 1.5; min-width: 180px;">
+        <div style="font-size: 13px; line-height: 1.5; min-width: 190px;">
             <strong style="font-size: 14px; color: #2c3e50;">Voo: ${nomeVoo}</strong><br>
             <hr style="margin: 5px 0; border: 0; border-top: 1px solid #ccc;">
             <strong>Projeto:</strong> ${projeto}<br>
@@ -73,9 +92,11 @@ function criarConteudoPopup(properties) {
             <strong>Plataforma:</strong> ${plataforma}<br>
             <strong>Data do Voo:</strong> ${dataFormatada}<br>
             <strong>Nota:</strong> ${nota}
+            ${botaoDownload}
         </div>
     `;
 }
+
 
 // --- FUNÇÃO PRINCIPAL DE ATUALIZAÇÃO DO MAPA ---
 function atualizarMapa() {
