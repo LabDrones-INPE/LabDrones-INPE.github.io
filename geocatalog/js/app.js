@@ -331,8 +331,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 // --- CARREGAMENTO INICIAL DO MAPA E DADOS ---
+// 
 window.onload = function() {
-    map = L.map('map', { zoomControl: false }).setView([-15.7801, -47.9292], 4);
+    map = L.map('map', {zoomControl: false, zoomSnap: 0.25, // O zoom passa a mover-se em frações (ex: 13 -> 13.25 -> 13.5)
+         wheelDebounceTime: 40 // Ajusta o tempo de espera (em ms) entre os eventos de scroll
+          }).setView([-15.7801, -47.9292], 4);
 
     // Inicializa o grupo de feições visíveis
     feicoesVisiveisGroup = L.featureGroup().addTo(map);
