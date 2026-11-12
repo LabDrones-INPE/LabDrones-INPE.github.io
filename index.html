@@ -217,6 +217,65 @@
             background-color: #111827;
         }
 
+        /* Seção de Apoio Institucional (Apenas Logos) */
+        .support-section {
+        max-width: 960px;
+        margin: 16px auto 12px auto;
+        padding: 12px 16px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        }
+
+        .support-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #64748b;
+        }
+
+        .support-grid {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 28px;
+        }
+
+        .support-card {
+        display: inline-flex;
+        align-items: center;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .support-card:hover {
+        opacity: 0.8;
+        transform: translateY(-2px);
+        }
+
+        .support-card img {
+        height: 36px; /* Tamanho equilibrado e compacto */
+        width: auto;
+        max-width: 150px;
+        object-fit: contain;
+        }
+
+        /* Fundo terracota para a logo branca do CEFAVELA */
+        .cefavela-bg {
+        background-color: #9e2b00;
+        padding: 6px 12px;
+        border-radius: 6px;
+        }
+
+        /* Ajusta a altura interna da imagem para compensar o padding e alinhar com a logo ao lado */
+        .cefavela-bg img {
+        height: 24px;
+        }
+        /* Fim - Seção de Apoio Institucional (Apenas Logos) */
+
         footer {
             text-align: center;
             padding: 20px;
@@ -324,8 +383,8 @@
                     <p>Aplicação para geotagging de imagens e visualização da trajetória de voo.</p>
                 </div>
                 <div class="btn-group">
-                    <a href="binaries/geotagger-windows.exe" class="card-btn btn-win">Windows</a>
-                    <a href="binaries/geotagger-linux" class="card-btn btn-linux">Linux</a>
+                    <a href="https://github.com/LabDrones-INPE/geotagger-app/releases/latest/download/geotagger-windows.exe" class="card-btn btn-win">Windows</a>
+                    <a href="https://github.com/LabDrones-INPE/geotagger-app/releases/latest/download/geotagger-linux" class="card-btn btn-linux">Linux</a>
                     <a href="https://github.com/LabDrones-INPE/geotagger-app" target="_blank" class="card-btn btn-code">GitHub</a>
                 </div>
             </div>
@@ -348,8 +407,8 @@
                     <p>Coleta de amostras, delimitação e rotulagem de polígonos de uso e cobertura da terra.</p>
                 </div>
                 <div class="btn-group">
-                    <a href="binaries/geosampler-windows.exe" class="card-btn btn-win">Windows</a>
-                    <a href="binaries/geosampler-linux" class="card-btn btn-linux">Linux</a>
+                    <a href="https://github.com/LabDrones-INPE/geosampler-app/releases/latest/download/geosampler-windows.exe" class="card-btn btn-win">Windows</a>
+                    <a href="https://github.com/LabDrones-INPE/geosampler-app/releases/latest/download/geosampler-linux" class="card-btn btn-linux">Linux</a>
                     <a href="https://github.com/LabDrones-INPE/geosampler-app" target="_blank" class="card-btn btn-code">GitHub</a>
                 </div>
             </div>
@@ -371,6 +430,24 @@
             </div>
         </div>
     </main>
+
+    <!-- Apoio e Financiamento -->
+    <section class="support-section" aria-label="Apoio e Financiamento">
+    <span class="support-label">Apoio:</span>
+    
+    <div class="support-grid">
+        <!-- Projeto HARMONIZE -->
+        <a href="https://harmonize-tools.org" target="_blank" rel="noopener noreferrer" class="support-card" title="HARMONIZE - Funded by Wellcome Trust">
+        <img src="https://www.harmonize-tools.org/++resource++harmonize.components/img/logo_harmonize.png?1643905094934" alt="Projeto HARMONIZE (Funded by Wellcome Trust)">
+        </a>
+
+        <!-- Projeto CEFAVELA -->
+         <a href="https://cefavela.ufabc.edu.b" target="_blank" rel="noopener noreferrer" class="support-card cefavela-bg" title="CEFAVELA - Financiado pela FAPESP">
+        <img src="https://cefavela.ufabc.edu.br/wp-content/uploads/2024/12/Logo-Completo_Areia-300x144.png" alt="Projeto CEFAVELA (Financiado pela FAPESP)">
+        </a>
+    </div>
+    </section>
+
 
     <footer>
         <p>&copy; LabDrones &mdash; Todos os direitos reservados. Suportado por GitHub Pages.</p>
