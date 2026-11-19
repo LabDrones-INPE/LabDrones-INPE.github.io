@@ -313,11 +313,28 @@ button.active{ background:#f39c12; color:#20303d; }
         <option value="retangular">Retangular</option>
       </select>
 
-      <label>Distâncias das zonas (m)</label>
-      <div class="row">
-        <input type="number" id="buf0" value="50"  min="1" step="10">
-        <input type="number" id="buf1" value="80"  min="1" step="10">
-        <input type="number" id="buf2" value="100" min="1" step="10">
+      <div id="bufCircleFields">
+        <label>Raio das zonas (m)</label>
+        <div class="row">
+          <input type="number" id="buf0" value="50"  min="1" step="10">
+          <input type="number" id="buf1" value="80"  min="1" step="10">
+          <input type="number" id="buf2" value="100" min="1" step="10">
+        </div>
+      </div>
+      <div id="bufRectFields" hidden>
+        <label>Distância horizontal — leste/oeste (m)</label>
+        <div class="row">
+          <input type="number" id="bufH0" value="50"  min="0" step="10">
+          <input type="number" id="bufH1" value="80"  min="0" step="10">
+          <input type="number" id="bufH2" value="100" min="0" step="10">
+        </div>
+        <label>Distância vertical — norte/sul (m)</label>
+        <div class="row">
+          <input type="number" id="bufV0" value="50"  min="0" step="10">
+          <input type="number" id="bufV1" value="80"  min="0" step="10">
+          <input type="number" id="bufV2" value="100" min="0" step="10">
+        </div>
+        <div class="hint">Distância do aeroporto até a borda do retângulo em cada direção (igual ao raio = quadrado que envolve o círculo).</div>
       </div>
       <button id="applyBuffers">Aplicar zonas de restrição</button>
       <div id="statusAeroportos" class="status"></div>
@@ -755,7 +772,7 @@ const buffersMG = {
     if (vis) bufferGroup.addLayer(entry.layer); else bufferGroup.removeLayer(entry.layer);
   },
   clear() { bufferLayers.forEach(l => l.clearLayers()); renderViz(); },
-  childName(entry) { return bufferDistances()[entry.idx] + " m (" + entry.layer.getLayers().length + ")"; }
+  childName(entry) { return zoneLabel(entry.idx) + " (" + entry.layer.getLayers().length + ")"; }
 };
 
 const VIZ = [
@@ -950,23 +967,55 @@ function bufferDistances() {
   });
 }
 
-function updateBufferLegend() {
-  bufferDistances().forEach((d,i) => document.getElementById("lg" + i).textContent = d + " m");
+function rectMargins() {
+  const read = (id, def) => {
+    const v = parseFloat(document.getElementById(id).value);
+    return v >= 0 ? v : def;
+  };
+  return [0,1,2].map(i => ({
+    h: read("bufH" + i, DEFAULT_BUFFER_DIST[i]),
+    v: read("bufV" + i, DEFAULT_BUFFER_DIST[i]),
+  }));
 }
-["buf0","buf1","buf2"].forEach(id =>
+
+function isRectShape() {
+  return document.getElementById("bufferShape").value === "retangular";
+}
+
+function zoneLabel(i) {
+  if (!isRectShape()) return bufferDistances()[i] + " m";
+  const m = rectMargins()[i];
+  return `${m.h}×${m.v} m`;
+}
+
+function updateBufferLegend() {
+  const rect = isRectShape();
+  document.getElementById("bufCircleFields").hidden = rect;
+  document.getElementById("bufRectFields").hidden   = !rect;
+  if (rect) {
+    rectMargins().forEach((m,i) =>
+      document.getElementById("lg" + i).textContent = `${m.h} m (horiz.) × ${m.v} m (vert.)`);
+  } else {
+    bufferDistances().forEach((d,i) => document.getElementById("lg" + i).textContent = d + " m");
+  }
+}
+["buf0","buf1","buf2","bufH0","bufH1","bufH2","bufV0","bufV1","bufV2"].forEach(id =>
   document.getElementById(id).addEventListener("input", () => { updateBufferLegend(); renderViz(); }));
 updateBufferLegend();
 
-// Ambas seguem o contorno real da geometria (ponto, linha ou polígono) com
-// turf.buffer — antes, as duas ignoravam a forma e desenhavam só em volta do
-// centro/caixa delimitadora da feição, o que ficava muito errado para pistas
-// (linhas compridas) ou complexos aeroportuários com formato irregular.
-// "steps" controla o arredondamento das curvas do contorno: alto = suave
-// (zona "circular"), baixo = mais anguloso/poligonal (zona "retangular").
-function rectZone(feature, dist) {
-  const buffered = turf.buffer(feature, dist, { units:"meters", steps:4 });
-  buffered.properties = feature.properties || {};
-  return buffered;
+// Zona "circular": turf.buffer segue o contorno real da geometria (ponto,
+// linha ou polígono) com curvas suaves.
+// Zona "retangular": retângulo alinhado norte–sul/leste–oeste em volta da
+// feição (ponto, linha ou polígono), estendido "margins.h" metros para leste
+// e oeste e "margins.v" metros para norte e sul.
+function rectZone(feature, margins) {
+  const [minX, minY, maxX, maxY] = turf.bbox(feature);
+  const latC = (minY + maxY) / 2;
+  const mPerDegLat = 111320;
+  const mPerDegLon = 111320 * Math.cos(latC * Math.PI / 180);
+  const dLon = margins.h / mPerDegLon, dLat = margins.v / mPerDegLat;
+  const w = minX - dLon, e = maxX + dLon, s = minY - dLat, n = maxY + dLat;
+  return turf.polygon([[[w,s],[e,s],[e,n],[w,n],[w,s]]], feature.properties || {});
 }
 
 function circleZone(feature, dist) {
@@ -976,13 +1025,14 @@ function circleZone(feature, dist) {
 }
 
 function rebuildBuffers() {
-  const shape = document.getElementById("bufferShape").value;
+  const rect = isRectShape();
   const dists = bufferDistances();
+  const margins = rectMargins();
   bufferLayers.forEach(l => l.clearLayers());
   aeroportos.eachLayer(layer => {
     const feature = layer.toGeoJSON();
-    dists.forEach((dist,i) => {
-      const zone = shape === "circular" ? circleZone(feature, dist) : rectZone(feature, dist);
+    [0,1,2].forEach(i => {
+      const zone = rect ? rectZone(feature, margins[i]) : circleZone(feature, dists[i]);
       bufferLayers[i].addData(zone);
     });
   });
@@ -993,7 +1043,23 @@ document.getElementById("applyBuffers").addEventListener("click", () => {
   rebuildBuffers();
   setStatus("statusAeroportos", "Zonas de restrição atualizadas.");
 });
-document.getElementById("bufferShape").addEventListener("change", rebuildBuffers);
+// Ao trocar para retangular, os raios atuais viram as distâncias
+// horizontal/vertical (exceto campos que o usuário já editou no modo retangular).
+const rectEdited = new Set();
+["bufH0","bufH1","bufH2","bufV0","bufV1","bufV2"].forEach(id =>
+  document.getElementById(id).addEventListener("input", () => rectEdited.add(id)));
+
+document.getElementById("bufferShape").addEventListener("change", () => {
+  if (isRectShape()) {
+    bufferDistances().forEach((d,i) => {
+      ["bufH" + i, "bufV" + i].forEach(id => {
+        if (!rectEdited.has(id)) document.getElementById(id).value = d;
+      });
+    });
+  }
+  updateBufferLegend();
+  rebuildBuffers();
+});
 
 ////////////////////////////////////////////////////////////////////////////
 // LOAD AIRPORTS
@@ -1374,7 +1440,6 @@ document.getElementById("check").addEventListener("click", () => {
   if (!layers.length) return alert("Nenhum plano de voo desenhado ou importado.");
 
   layers.forEach(layer => layer.setStyle && layer.setStyle({ color:PLANO_COLOR, weight:4 }));
-  const dists = bufferDistances();
   const hits = [];
 
   layers.forEach(planoLayer => {
@@ -1383,7 +1448,7 @@ document.getElementById("check").addEventListener("click", () => {
       bl.eachLayer(bufferLayer => {
         const zona = bufferLayer.toGeoJSON();
         if (turf.booleanIntersects(voo, zona)) {
-          hits.push({ dist:dists[i], name:getAirportName(zona) });
+          hits.push({ dist:zoneLabel(i), name:getAirportName(zona) });
           if (planoLayer.setStyle) planoLayer.setStyle({ color:BUFFER_COLORS[i], weight:6 });
         }
       });
@@ -1392,7 +1457,7 @@ document.getElementById("check").addEventListener("click", () => {
 
   if (!hits.length) return alert("Nenhuma interseção com as zonas de restrição.");
   alert("Interseções encontradas:\n\n" +
-    hits.map(h => `• ${h.name} — zona de ${h.dist} m`).join("\n"));
+    hits.map(h => `• ${h.name} — zona de ${h.dist}`).join("\n"));
 });
 
 ////////////////////////////////////////////////////////////////////////////
